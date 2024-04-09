@@ -25,32 +25,35 @@ def get(url):
 mac = "ae:d2:85:b5:52:ff"
 
 # Try and locate it and get the IP address of the primary device
-neighbours = run_command("ip neigh")
+while True:
+    print("[Server Locator] Attempting to find primary device")
+    neighbours = run_command("ip neigh")
 
-ip = None
+    ip = None
 
-for n in neighbours:
-    pieces = n.split(" ")
-    if pieces[4] == mac:
-        ip = pieces[0]
+    for n in neighbours:
+        pieces = n.split(" ")
+        if pieces[4] == mac:
+            ip = pieces[0]
 
-if ip is None:
-    print(f"[Server Locator] Unable to find primary device on network!\n")
-    neighbour_command = "\n".join(neighbours)
-    print(f"Output of 'ip neigh':\n{neighbour_command}")
-    sys.exit(1)
-try:
-    status = requests.get(f"http://{ip}:5000/other").status_code
-except Exception as e:
-    print(f"[Server Locator] Connection errored: {e}")
-    sys.exit(1)
+    if ip is None:
+        print(f"[Server Locator] Unable to find primary device on network!\n")
+        neighbour_command = "\n".join(neighbours)
+        print(f"Output of 'ip neigh':\n{neighbour_command}")
+        sys.exit(1)
+    try:
+        status = requests.get(f"http://{ip}:5000/other").status_code
+    except Exception as e:
+        print(f"[Server Locator] Connection errored: {e}")
+        continue
 
-if status == 200:
-    ip += ":5000"
-    print(f"[Server Locator] Primary device located and connection established")
-else:
-    print(f"[Server Locator] Primary device malfunctioning! Recieved HTTP {status}")
-    sys.exit(1)
+    if status == 200:
+        ip += ":5000"
+        print(f"[Server Locator] Primary device located and connection established")
+        break
+    else:
+        print(f"[Server Locator] Primary device malfunctioning! Recieved HTTP {status}")
+        continue
 
 # Continually check for actuation pattern and perform it
 while True:
@@ -64,3 +67,5 @@ while True:
             case "far": actuation.far()
             case "near": actuation.near()
             case "very_near": actuation.very_near()
+    else:
+        print("[Actuation] Cycle failed, retrying...")
