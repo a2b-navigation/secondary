@@ -1,0 +1,66 @@
+import subprocess
+import actuation
+import requests
+import time
+import sys
+
+# Runs a command on the terminal and returns the output
+def run_command(command):
+    return subprocess.check_output(command, shell=True).decode("utf-8").split("\n")[:-1]
+
+# Makes a request to the primary device
+def get(url):
+    try:
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            return resp
+        else:
+            print(f"[Requests] Recieved HTTP {resp.status_code}")
+            return None
+    except Exception as e:
+        print(f"[Requests] Got back error: {e}")
+        return None
+
+# The mac address of the primary device
+mac = "ae:d2:85:b5:52:ff"
+
+# Try and locate it and get the IP address of the primary device
+neighbours = run_command("ip neigh")
+
+ip = None
+
+for n in neighbours:
+    pieces = n.split(" ")
+    if pieces[4] == mac:
+        ip = pieces[0]
+
+if ip is None:
+    print(f"[Server Locator] Unable to find primary device on network!\n")
+    neighbour_command = "\n".join(neighbours)
+    print(f"Output of 'ip neigh':\n{neighbour_command}")
+    sys.exit(1)
+try:
+    status = requests.get(f"http://{ip}:5000/other").status_code
+except Exception as e:
+    print(f"[Server Locator] Connection errored: {e}")
+    sys.exit(1)
+
+if status == 200:
+    ip += ":5000"
+    print(f"[Server Locator] Primary device located and connection established")
+else:
+    print(f"[Server Locator] Primary device malfunctioning! Recieved HTTP {status}")
+    sys.exit(1)
+
+# Continually check for actuation pattern and perform it
+while True:
+    pattern = get(f"http://{ip}/other")
+    if pattern is not None:
+        pattern = pattern.text.strip()
+        print(f"[Actuation] Received pattern {pattern}")
+        match pattern:
+            case "none": time.sleep(0.5)
+            case "very_far": actuation.very_far()
+            case "far": actuation.far()
+            case "near": actuation.near()
+            case "very_near": actuation.very_near()
