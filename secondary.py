@@ -45,6 +45,7 @@ while True:
         status = requests.get(f"http://{ip}:5000/other").status_code
     except Exception as e:
         print(f"[Server Locator] Connection errored: {e}")
+        time.sleep(1)
         continue
 
     if status == 200:
@@ -53,6 +54,7 @@ while True:
         break
     else:
         print(f"[Server Locator] Primary device malfunctioning! Recieved HTTP {status}")
+        time.sleep(1)
         continue
 
 # Continually check for actuation pattern and perform it
@@ -62,10 +64,11 @@ while True:
         pattern = pattern.text.strip()
         print(f"[Actuation] Received pattern {pattern}")
         match pattern:
-            case "none": time.sleep(0.5)
+            case "none": time.sleep(1)
             case "very_far": actuation.very_far()
             case "far": actuation.far()
             case "near": actuation.near()
             case "very_near": actuation.very_near()
     else:
         print("[Actuation] Cycle failed, retrying...")
+        time.sleep(1)
