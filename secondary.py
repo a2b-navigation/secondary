@@ -1,5 +1,6 @@
 import subprocess
 import actuation
+import threading
 import requests
 import time
 import sys
@@ -58,9 +59,21 @@ while True:
         time.sleep(1)
         continue
 
+pattern = "none"
+lock = False
+
+def update_pattern():
+    global pattern
+    global lock
+    lock = True
+    pattern = get(f"http://{ip}/other")
+    lock = False
+
 # Continually check for actuation pattern and perform it
 while True:
-    pattern = get(f"http://{ip}/other")
+    if not lock:
+        t = threading.Thread(target=update_pattern, daemon=True)
+        t.start()
     if pattern is not None:
         pattern = pattern.text.strip()
         print(f"[Actuation] Received pattern {pattern}")
