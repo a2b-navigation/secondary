@@ -23,6 +23,7 @@ def get(url):
 
 # The mac address of the primary device
 mac = "ae:d2:85:b5:52:ff"
+hard_code = "06:70:4d:43:ac:54"
 
 # Try and locate it and get the IP address of the primary device
 while True:
@@ -33,7 +34,7 @@ while True:
 
     for n in neighbours:
         pieces = n.split(" ")
-        if pieces[4] == mac:
+        if pieces[4] == mac or pieces[4] == hard_code:
             ip = pieces[0]
 
     if ip is None:
