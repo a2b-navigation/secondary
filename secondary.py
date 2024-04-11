@@ -66,7 +66,10 @@ def update_pattern():
     global pattern
     global lock
     lock = True
-    pattern = get(f"http://{ip}/other")
+    request = get(f"http://{ip}/other")
+    if request is not None:
+        pattern = request.text.strip()
+        print(f"[Actuation] Received pattern {pattern}")
     lock = False
 
 # Continually check for actuation pattern and perform it
@@ -74,15 +77,12 @@ while True:
     if not lock:
         t = threading.Thread(target=update_pattern, daemon=True)
         t.start()
-    if pattern is not None:
-        pattern = pattern.text.strip()
-        print(f"[Actuation] Received pattern {pattern}")
-        match pattern:
-            case "none": time.sleep(1)
-            case "very_far": actuation.very_far()
-            case "far": actuation.far()
-            case "near": actuation.near()
-            case "very_near": actuation.very_near()
+    match pattern:
+        case "none": time.sleep(1)
+        case "very_far": actuation.very_far()
+        case "far": actuation.far()
+        case "near": actuation.near()
+        case "very_near": actuation.very_near()
     else:
         print("[Actuation] Cycle failed, retrying...")
         time.sleep(1)
