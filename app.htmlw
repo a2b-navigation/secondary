@@ -16,4 +16,4 @@ def actuate(n_vibrations):
 very_near = lambda: actuate(0.5)
 near = lambda: actuate(1)
 far = lambda: actuate(3)
-very_far = lambda: actuate(5)
+very_far = lambda: actuate(6)
