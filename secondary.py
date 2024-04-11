@@ -83,6 +83,3 @@ while True:
         case "far": actuation.far()
         case "near": actuation.near()
         case "very_near": actuation.very_near()
-    else:
-        print("[Actuation] Cycle failed, retrying...")
-        time.sleep(1)
