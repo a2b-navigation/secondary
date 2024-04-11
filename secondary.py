@@ -12,7 +12,7 @@ def run_command(command):
 # Makes a request to the primary device
 def get(url):
     try:
-        resp = requests.get(url)
+        resp = requests.get(url, timeout=3)
         if resp.status_code == 200:
             return resp
         else:
