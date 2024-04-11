@@ -34,7 +34,7 @@ while True:
 
     for n in neighbours:
         pieces = n.split(" ")
-        if pieces[4] == mac or pieces[4] == hard_code:
+        if pieces[4] == mac or (pieces[4] == hard_code and pieces[0].startswith("192")):
             ip = pieces[0]
 
     if ip is None:
